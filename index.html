@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>vite-spa</title>
+  </head>
+  <body>
+    <header>
+        <div class="header-container">
+            <div class="header-content">
+                <h1 class="header-logo">PODMEFOM</h1>
+            </div>
+        </div>
+    </header>
+
+    <main>
+    <div class="main-container">
+        
+        <div class="block-title">
+            <h2 id="tab-tracks" class="active">Треки</h2> 
+            <h2 id="tab-beats">Биты</h2>
+        </div>
+
+        <div id="tracks-list" class="tracks-cards">
+            
+            <div class="track-card">
+                <div class="card-top">
+                    <img src="assets/images/1.jpg" alt="Cover">
+                    <div class="card-top-titles">
+                        <h3 class="track-title">Night Drive</h3>
+                        <h3 class="track-author">Podmefom</h3>
+                    </div>
+                </div>
+
+                <div class="card-mid">
+                    <div class="waveform-container">
+                        </div>
+                </div>
+
+                <div class="card-bottom">
+                    <div class="stat-item like-stat">
+                        <i class="fa-regular fa-heart"></i>
+                        <span>142</span>
+                    </div>
+                    <span class="card-duration">2:45</span>
+                    <button class="play-btn" data-audio="assets/audio/1.mp3">
+                        <i class="fas fa-play"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="track-card">
+                <div class="card-top">
+                    <img src="assets/images/1.jpg" alt="Cover">
+                    <div class="card-top-titles">
+                        <h3 class="track-title">Neon City</h3>
+                        <h3 class="track-author">Podmefom</h3>
+                    </div>
+                </div>
+                <div class="card-mid">
+                    <div class="waveform-container"></div>
+                </div>
+                <div class="card-bottom">
+                    <div class="stat-item like-stat">
+                        <i class="fa-regular fa-heart"></i>
+                        <span>89</span>
+                    </div>
+                    <span class="card-duration">3:10</span>
+                    <button class="play-btn" data-audio="assets/audio/2.mp3">
+                        <i class="fas fa-play"></i>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="beats-list" class="tracks-cards" style="display: none;">
+            
+            <div class="beat-card">
+                <div class="card-top">
+                    <img src="assets/images/1.jpg" alt="Cover">
+                    <div class="card-top-titles">
+                        <h3 class="track-title">Trap Soul</h3>
+                        <h3 class="track-author">Type Beat</h3>
+                    </div>
+                </div>
+                <div class="card-mid">
+                    <div class="waveform-container"></div>
+                </div>
+                <div class="card-bottom">
+                    <div class="stat-item like-stat">
+                        <i class="fa-regular fa-heart"></i>
+                        <span>55</span>
+                    </div>
+                    <span class="card-duration">1:50</span>
+                    <button class="play-btn" data-audio="assets/audio/3.mp3">
+                        <i class="fas fa-play"></i>
+                    </button>
+                </div>
+            </div>
+
+             <div class="beat-card">
+                <div class="card-top">
+                    <img src="assets/images/1.jpg" alt="Cover">
+                    <div class="card-top-titles">
+                        <h3 class="track-title">Drill Hard</h3>
+                        <h3 class="track-author">Podmefom</h3>
+                    </div>
+                </div>
+                <div class="card-mid">
+                    <div class="waveform-container"></div>
+                </div>
+                <div class="card-bottom">
+                    <div class="stat-item like-stat">
+                        <i class="fa-regular fa-heart"></i>
+                        <span>201</span>
+                    </div>
+                    <span class="card-duration">2:15</span>
+                    <button class="play-btn" data-audio="assets/audio/4.mp3">
+                        <i class="fas fa-play"></i>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="bottom-player">
+            <div class="player-info">
+                <img src="" alt="" class="current-track-img"> 
+                <div class="current-track-details">
+                    <div class="track-title-container">
+                        <h4 class="current-track-title">Выберите трек</h4>
+                    </div>
+                    <p class="current-track-artist">-</p>
+                </div>
+            </div>
+
+            <div class="player-center-block">
+                <div class="player-controls">
+                    <button id="prev-btn"><i class="fas fa-step-backward"></i></button>
+                    <button id="main-play-btn"><i class="fas fa-play"></i></button>
+                    <button id="next-btn"><i class="fas fa-step-forward"></i></button>
+                </div>
+                
+                <div class="player-time-line">
+                    <span class="current-time time-display">0:00</span>
+                    <input type="range" id="progress-bar" min="0" max="1" step="0.001" value="0">
+                    <span class="total-duration time-display">0:00</span>
+                </div>
+            </div>
+
+            <div class="player-volume">
+                <i class="fas fa-volume-up"></i>
+                <input type="range" id="global-volume" min="0" max="1" step="0.01" value="0.5">
+            </div> 
+        </div>
+
+        <section id="track-details-page" class="track-page-view">
+            <button class="back-btn">
+                <i class="fas fa-arrow-left"></i> Назад
+            </button>
+
+            <div class="track-content-full">
+                <div class="track-hero">
+                    <img src="" alt="Cover" class="full-track-cover">
+                    <div class="track-hero-info">
+                        <h1 class="full-track-title">Название трека</h1>
+                        <h2 class="full-track-artist">Исполнитель</h2>
+                        
+                        <div class="track-actions">
+                            <button class="action-btn play-main">
+                                <i class="fas fa-play"></i> Слушать
+                            </button>
+                            <button class="action-btn like-main">
+                                <i class="fa-regular fa-heart"></i>
+                            </button>
+                            <button class="action-btn share-main">
+                                <i class="fas fa-share"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="track-description">
+                    <h3>О треке</h3>
+                    <p class="description-text">
+                        Здесь будет описание твоего бита или трека, история создания или технические характеристики (BPM, тональность).
+                    </p>
+                </div>
+
+                <div class="track-lyrics-section">
+                    <h3>Текст / Дополнительно</h3>
+                    <div class="lyrics-box">
+                        Здесь можно разместить текст песни или, если это бит, условия лицензии.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+</main>
+    <script type="module" src="js/app.js"></script>
+    <script src="https://kit.fontawesome.com/c20d506928.js" crossorigin="anonymous"></script>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
