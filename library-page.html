@@ -1,0 +1,80 @@
+<main>
+    <div class="main-container">
+        <div class="profile-header">
+            <div class="profile-cover">
+                <div class="cover-overlay"></div>
+            </div>
+
+            <div class="profile-info-wrapper">
+                <div class="profile-avatar-container">
+                    <div class="profile-avatar">
+                        </div>
+                    <div class="online-badge"></div> </div>
+
+                <div class="profile-text">
+                    <span class="user-status-tag">Producer</span>
+                    <h2 class="user-name">PODMEFOM</h2>
+                    <div class="profile-stats">
+                        <span><strong>12</strong> Треков</span>
+                        <span><strong>45</strong> Лайков</span>
+                    </div>
+                </div>
+
+                <div class="profile-actions">
+                    <button class="lib-btn edit-btn" title="Редактировать">
+                        <i class="fas fa-pencil-alt"></i>
+                    </button>
+                    <button class="lib-btn settings-btn" title="Настройки">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="library-content">
+            <div class="library-nav">
+                <div class="lib-title-group">
+                    <i class="fas fa-heart"></i>
+                    <h3>Liked Tracks</h3>
+                </div>
+                
+                <div class="library-controls">
+                    <div class="search-bar">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Поиск в коллекции...">
+                    </div>
+                    <button class="view-toggle" title="Сетка/Список">
+                        <i class="fas fa-th-large"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="liked-tracks-list" class="tracks-grid">
+                <div class="track-card-mini">
+                    <div class="mini-cover-wrapper">
+                        <img src="cover.jpg" alt="">
+                        <div class="mini-play-overlay">
+                            <i class="fas fa-play"></i>
+                        </div>
+                    </div>
+                    <div class="mini-info">
+                        <span class="mini-title">Название трека</span>
+                        <span class="mini-artist">Автор</span>
+                    </div>
+                    <div class="mini-actions">
+                        <button class="remove-btn"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="empty-library" class="empty-state hidden">
+                <div class="empty-icon">
+                    <i class="fas fa-compact-disc"></i>
+                </div>
+                <h4>В библиотеке пока пусто</h4>
+                <p>Добавляйте треки из магазина, чтобы они появились здесь.</p>
+                <button class="go-shop-btn">В магазин</button>
+            </div>
+        </div>
+    </div>
+</main>

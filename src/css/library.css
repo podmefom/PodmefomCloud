@@ -1,0 +1,315 @@
+
+.profile-header {
+    position: relative;
+    width: 100%;
+    margin-bottom: 40px;
+    border-radius: 24px;
+    overflow: hidden;
+    background: var(--glass-surface);
+    border: 1px solid var(--glass-border);
+}
+
+.profile-cover {
+    height: 280px;
+    background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+    position: relative;
+    background-size: cover;
+    background-position: center;
+}
+
+.cover-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to top, var(--bg-deep) 0%, transparent 100%);
+}
+
+
+.profile-info-wrapper {
+    display: flex;
+    align-items: flex-end;
+    padding: 0 40px 30px;
+    margin-top: -70px; 
+    position: relative;
+    z-index: 10;
+    gap: 25px;
+}
+
+.profile-avatar-container {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.profile-avatar {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: #222;
+    border: 6px solid var(--bg-deep);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+    overflow: hidden;
+}
+
+.online-badge {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    width: 22px;
+    height: 22px;
+    background: #00ff88;
+    border: 4px solid var(--bg-deep);
+    border-radius: 50%;
+    box-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
+}
+
+.profile-text {
+    flex-grow: 1;
+    padding-bottom: 10px;
+}
+
+.user-status-tag {
+    background: var(--accent);
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.user-name {
+    font-size: 2.8rem;
+    font-weight: 800;
+    margin: 8px 0;
+    letter-spacing: -1px;
+}
+
+.profile-stats {
+    display: flex;
+    gap: 25px;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.profile-stats strong {
+    color: #fff;
+}
+
+
+.profile-actions {
+    display: flex;
+    gap: 12px;
+    padding-bottom: 15px;
+}
+
+.lib-btn {
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    border: 1px solid var(--glass-border);
+    background: var(--glass-surface);
+    color: #fff;
+    cursor: pointer;
+    transition: 0.3s var(--ease-elastic);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lib-btn:hover {
+    background: var(--glass-highlight);
+    transform: translateY(-3px);
+    border-color: var(--accent);
+}
+
+
+.library-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 40px 0 25px;
+}
+
+.lib-title-group {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.lib-title-group i {
+    color: var(--accent);
+    font-size: 1.4rem;
+}
+
+.library-controls {
+    display: flex;
+    gap: 15px;
+}
+
+.search-bar {
+    background: var(--glass-surface);
+    border: 1px solid var(--glass-border);
+    padding: 10px 18px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: 0.3s;
+}
+
+.search-bar:focus-within {
+    border-color: var(--accent);
+    background: rgba(255,255,255,0.05);
+}
+
+.search-bar input {
+    background: transparent;
+    border: none;
+    color: #fff;
+    outline: none;
+    font-size: 0.9rem;
+    width: 200px;
+}
+
+
+.tracks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 25px;
+    padding-bottom: 120px;
+}
+
+.track-card-mini {
+    background: var(--glass-surface);
+    border: 1px solid var(--glass-border);
+    padding: 16px;
+    border-radius: 22px;
+    transition: all 0.3s var(--ease-elastic);
+    position: relative;
+    overflow: hidden;
+}
+
+.track-card-mini:hover {
+    background: rgba(255, 255, 255, 0.07);
+    transform: translateY(-8px);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.mini-cover-wrapper {
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+    aspect-ratio: 1 / 1;
+    margin-bottom: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+
+.mini-cover-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: 0.5s;
+}
+
+.mini-play-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(108, 92, 231, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: 0.3s;
+    backdrop-filter: blur(2px);
+}
+
+.track-card-mini:hover .mini-play-overlay {
+    opacity: 1;
+}
+
+.track-card-mini:hover .mini-cover-wrapper img {
+    transform: scale(1.1);
+}
+
+.mini-info .mini-title {
+    display: block;
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mini-info .mini-artist {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+
+.mini-actions {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 5;
+}
+
+.remove-btn {
+    background: rgba(255, 59, 48, 0.15);
+    color: #ff4757;
+    border: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.remove-btn:hover {
+    background: #ff4757;
+    color: #fff;
+    transform: scale(1.1);
+}
+
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+    text-align: center;
+}
+
+.empty-icon {
+    font-size: 4rem;
+    color: var(--glass-border);
+    margin-bottom: 20px;
+}
+
+.go-shop-btn {
+    margin-top: 25px;
+    padding: 12px 30px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.go-shop-btn:hover {
+    box-shadow: 0 0 20px rgba(108, 92, 231, 0.4);
+    transform: scale(1.05);
+}
+
+.hidden { display: none; }

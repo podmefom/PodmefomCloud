@@ -1,0 +1,131 @@
+header {
+    grid-row: 1;
+    background: rgba(5, 5, 5, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 1.5rem;
+    z-index: 1000;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+header h1 {
+    font-size: 2.2rem;
+    letter-spacing: 8px;
+    font-weight: 800;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, #fff 0%, var(--text-secondary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    text-align: center;
+}
+
+
+.bottom-player {
+    grid-row: 3;
+    width: 95%;
+    max-width: 1200px;
+    height: 100px;
+    background: rgba(15, 15, 20, 0.8);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 30px;
+    margin: 10px auto 20px auto;
+    z-index: 2000;
+}
+
+.player-info {
+     display: flex; align-items: center; width: 30%; min-width: 180px; overflow: hidden; 
+}
+
+.current-track-img { 
+    width: 50px; height: 50px; border-radius: 8px; margin-right: 15px; object-fit: cover; 
+}
+
+.current-track-details { 
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; flex-direction: column; 
+}
+
+.track-title-container { 
+    width: 150px; overflow: hidden; white-space: nowrap;
+ }
+
+.current-track-title { 
+    margin: 0; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block; transition: transform .3s ease; 
+}
+
+.current-track-title.scrolling { 
+    animation: marquee 10s linear infinite;
+ }
+
+.current-track-title.scrolling::after { 
+    content: attr(data-text); padding-left: 50px; display: inline-block; 
+}
+
+
+.player-center-block { 
+    flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; margin: 0 40
+ }
+
+.player-controls { 
+    display: flex; align-items: center; justify-content: center; width: 40%; gap: 20px; flex-shrink: 0;
+ }
+
+#prev-btn, #next-btn { 
+    background: transparent; border: none; color: rgba(255, 255, 255, 0.5); font-size: 1.1rem; cursor: pointer; transition: all 0.2s ease;
+ }
+
+#prev-btn:hover, #next-btn:hover { 
+    color: #fff; transform: scale(1.1);
+ }
+
+#main-play-btn { 
+    width: 54px; height: 54px; border-radius: 50%; background: #fff; color: #000; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; transition: all 0.3s var(--ease-elastic); box-shadow: 0 8px 20px rgba(255, 255, 255, 0.2); 
+}
+
+#main-play-btn:hover { 
+    transform: scale(1.1) translateY(-2px); box-shadow: 0 12px 25px rgba(255, 255, 255, 0.3); 
+}
+
+
+.player-time-line { 
+    width: 100%; display: flex; align-items: center; gap: 15px; flex-grow: 2; min-width: 200px; 
+}
+
+#progress-bar { 
+    flex-grow: 1; height: 4px; -webkit-appearance: none; background: rgba(255, 255, 255, 0.1); border-radius: 2px; outline: none; cursor: pointer; 
+}
+
+#progress-bar::-webkit-slider-thumb { 
+    -webkit-appearance: none; width: 12px; height: 12px; background: #fff; border-radius: 50%; box-shadow: 0 0 10px rgba(108, 92, 231, 0.8); 
+}
+
+.time-display { 
+    font-size: 0.8rem; color: rgba(255, 255, 255, 0.4); font-weight: 500; letter-spacing: 0.5px; margin-left: 10px; 
+}
+
+
+.player-volume {
+     display: flex; align-items: center; justify-content: flex-end; width: 30%; gap: 12px;
+     }
+
+.player-volume i { 
+    color: rgba(255, 255, 255, 0.5); font-size: 0.9rem; 
+}
+
+#global-volume { 
+    -webkit-appearance: none; width: 100px; height: 4px; background: rgba(255, 255, 255, 0.1); border-radius: 2px; outline: none; 
+}
+
+#global-volume::-webkit-slider-thumb { 
+    -webkit-appearance: none; width: 12px; height: 12px; background: #fff; border-radius: 50%; cursor: pointer; 
+}
+
+#global-volume::-webkit-slider-thumb:hover { 
+    transform: scale(1.3); background: #6c5ce7; 
+}
