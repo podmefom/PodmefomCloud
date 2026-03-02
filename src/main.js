@@ -158,58 +158,63 @@ export function initAudioPlayers() {
 }
 
 async function showTrackPage(trackId) {
-    let ws = players[track.url];
-    
     const track = state.allTracks.find(t => t.id === trackId);
-
-    if(!track) return ; 
+    if (!track) return; 
 
     await loadPage('track-page');
-    
-    document.querySelector('.full-track-title').textContent = track.title;
-    document.querySelector('.full-track-artist').textContent = track.artist;
-    document.querySelector('.full-track-cover').src = track.img;
-    document.querySelector('.description-text').textContent = track.description;
+
+    const titleEl = document.querySelector('.full-track-title');
+    const artistEl = document.querySelector('.full-track-artist');
+    const coverEl = document.querySelector('.full-track-cover');
+    const descEl = document.querySelector('.description-text');
+
+    if (titleEl) titleEl.textContent = track.title;
+    if (artistEl) artistEl.textContent = track.artist;
+    if (coverEl) coverEl.src = track.img;
+    if (descEl) descEl.textContent = track.description;
 
     const playMainBtn = document.querySelector('.play-main');
 
     playMainBtn.addEventListener('click', () => {
-    let ws = players[track.url];
+        let ws = players[track.url];
 
-    if (!ws) {
-        ws = WaveSurfer.create({
-            url: track.url,
-            container: document.createElement('div'),
-            ...wavesurferOptions
-        });
-        players[track.url] = ws;
-    }
+        if (!ws) {
+            const hiddenContainer = document.createElement('div');
+            hiddenContainer.style.display = 'none';
+            document.body.appendChild(hiddenContainer);
 
-    if (currentActiveInstance && currentActiveInstance !== ws) {
-        currentActiveInstance.pause();
-    }
+            ws = WaveSurfer.create({
+                ...wavesurferOptions,
+                url: track.url,
+                container: hiddenContainer,
+            });
+            players[track.url] = ws;
+        }
 
-    ws.playPause();
-    currentActiveInstance = ws;
-    updateBottomPlayer(track);
-    
+        if (currentActiveInstance && currentActiveInstance !== ws) {
+            currentActiveInstance.pause();
+        }
 
-    initVisualizer(ws); 
+        ws.playPause();
+        currentActiveInstance = ws;
+        
+        updateBottomPlayer(track);
+        initVisualizer(ws); 
     });
-    
-    initVisualizer(players[track.url]);
 
     const backBtn = document.querySelector('.back-btn');
-    backBtn.addEventListener('click', async () => {
-        await loadPage('main-page');
-        initAudioPlayers(); 
-        initMainPageEvents();
-    });
-
+    if (backBtn) {
+        backBtn.addEventListener('click', async () => {
+            await loadPage('main-page');
+            initAudioPlayers(); 
+            initMainPageEvents();
+        });
+    }
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
     await loadPage('main-page');
+    initAudioPlayers();
     initPlayerControls(); 
     initMainPageEvents(); 
     
