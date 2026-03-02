@@ -32,7 +32,8 @@ function updateBottomPlayer(track) {
         if (title) {
             title.textContent = track.title;
             title.setAttribute('data-text', track.title);
-            title.classList.toggle('scrolling', title.scrollWidth > titleContainer.offsetWidth);
+            const isOverflowing = titleContainer ? title.scrollWidth > titleContainer.offsetWidth : false;
+            title.classList.toggle('scrolling', isOverflowing);
         }
         if (artist) artist.textContent = track.artist;
         if (img) img.src = track.img;
@@ -128,11 +129,14 @@ export function initAudioPlayers() {
             description: 'Описание пока не добавлено.'
         };
 
-        const wavesurfer = getOrCreatePlayer(container, audioUrl, icon, progressBar, durationBox);
+        let wavesurfer = null;
+        try {
+            wavesurfer = getOrCreatePlayer(container, audioUrl, icon, progressBar, durationBox);
+        } catch (error) {
+            console.error('Не удалось инициализировать плеер:', audioUrl, error);
+        }
 
-        
-
-        if (trackInfo && likeIcon && countDisplay && likedTracks.includes(trackInfo.id)) {
+        if (likeButton && trackInfo?.id && likeIcon && countDisplay) {
             likeIcon.classList.replace('fa-regular', 'fa-solid');
             countDisplay.textContent = (parseInt(countDisplay.textContent) || 0) + 1;
         }
@@ -152,6 +156,16 @@ export function initAudioPlayers() {
 
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
+
+            if (!wavesurfer) {
+                try {
+                    wavesurfer = getOrCreatePlayer(container, audioUrl, icon, progressBar, durationBox);
+                } catch (error) {
+                    console.error('Не удалось запустить плеер:', audioUrl, error);
+                    return;
+                }
+            }
+
             if (currentActiveInstance && currentActiveInstance !== wavesurfer) {
                 currentActiveInstance.pause();
             }
@@ -184,32 +198,34 @@ async function showTrackPage(track) {
 
     const playMainBtn = document.querySelector('.play-main');
 
-    playMainBtn.addEventListener('click', () => {
-        let ws = players[track.url];
+    if (playMainBtn) {
+        playMainBtn.addEventListener('click', () => {
+            let ws = players[track.url];
 
-        if (!ws) {
-            const hiddenContainer = document.createElement('div');
-            hiddenContainer.style.display = 'none';
-            document.body.appendChild(hiddenContainer);
+            if (!ws) {
+                const hiddenContainer = document.createElement('div');
+                hiddenContainer.style.display = 'none';
+                document.body.appendChild(hiddenContainer);
 
-            ws = WaveSurfer.create({
-                ...wavesurferOptions,
-                url: track.url,
-                container: hiddenContainer,
-            });
-            players[track.url] = ws;
-        }
+                ws = WaveSurfer.create({
+                    url: track.url,
+                    container: hiddenContainer,
+                    ...wavesurferOptions
+                });
+                players[track.url] = ws;
+            }
 
-        if (currentActiveInstance && currentActiveInstance !== ws) {
-            currentActiveInstance.pause();
-        }
+            if (currentActiveInstance && currentActiveInstance !== ws) {
+                currentActiveInstance.pause();
+            }
 
-        ws.playPause();
-        currentActiveInstance = ws;
-        
-        updateBottomPlayer(track);
-        initVisualizer(ws); 
-    });
+            ws.playPause();
+            currentActiveInstance = ws;
+            updateBottomPlayer(track);
+            initVisualizer(ws); 
+        });
+    }
+
 
     const backBtn = document.querySelector('.back-btn');
     if (backBtn) {

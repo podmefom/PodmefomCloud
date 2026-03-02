@@ -8,8 +8,9 @@ export function initVisualizer(wavesurfer) {
     if (!canvas) return;
     const canvasCtx = canvas.getContext('2d');
     
-    const audio = wavesurfer.getMediaElement();
-    const ctx = wavesurfer.backend.getAudioContext();
+    const audio = wavesurfer.getMediaElement?.();
+    const ctx = wavesurfer.getAudioContext?.() || wavesurfer.backend?.getAudioContext?.();
+    if (!audio || !ctx) return;
 
     if (!source) {
         analyser = ctx.createAnalyser();
