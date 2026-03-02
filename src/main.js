@@ -118,18 +118,26 @@ export function initAudioPlayers() {
         const likeButton = card.querySelector('.like-stat');
         const likeIcon = likeButton?.querySelector('i');
         const countDisplay = likeButton?.querySelector('span');
-        const trackInfo = state.allTracks.find(t => t.url === audioUrl);
+        const knownTrack = state.allTracks.find(t => t.url === audioUrl);
+        const trackInfo = knownTrack || {
+            id: null,
+            title: card.querySelector('.track-title')?.textContent?.trim() || 'Untitled',
+            artist: card.querySelector('.track-author')?.textContent?.trim() || 'Unknown artist',
+            url: audioUrl,
+            img: card.querySelector('img')?.getAttribute('src') || '/images/1.jpg',
+            description: 'Описание пока не добавлено.'
+        };
 
         const wavesurfer = getOrCreatePlayer(container, audioUrl, icon, progressBar, durationBox);
 
         
 
-        if (trackInfo && likedTracks.includes(trackInfo.id)) {
+        if (trackInfo && likeIcon && countDisplay && likedTracks.includes(trackInfo.id)) {
             likeIcon.classList.replace('fa-regular', 'fa-solid');
             countDisplay.textContent = (parseInt(countDisplay.textContent) || 0) + 1;
         }
 
-        if (likeButton) {
+        if (likeButton && trackInfo?.id && likeIcon && countDisplay) {
             likeButton.addEventListener('click', (e) => {
                 e.stopPropagation();
                 toggleLikeState(trackInfo.id, likeIcon, countDisplay);
@@ -138,7 +146,7 @@ export function initAudioPlayers() {
 
         card.addEventListener('click', (e) => {
             if (!e.target.closest('.play-btn') && !e.target.closest('.like-stat')) {
-                showTrackPage(trackInfo.id);
+                showTrackPage(trackInfo);
             }
         });
 
@@ -149,7 +157,9 @@ export function initAudioPlayers() {
             }
             wavesurfer.playPause();
             currentActiveInstance = wavesurfer;
-            state.currentTrackIndex = state.allTracks.indexOf(trackInfo);
+            if (knownTrack) {
+                state.currentTrackIndex = state.allTracks.indexOf(knownTrack);
+            }
             updateBottomPlayer(trackInfo);
             currentActiveInstance.setVolume(globalVolume.value);
             initVisualizer(currentActiveInstance);
@@ -157,9 +167,8 @@ export function initAudioPlayers() {
     });
 }
 
-async function showTrackPage(trackId) {
-    const track = state.allTracks.find(t => t.id === trackId);
-    if (!track) return; 
+async function showTrackPage(track) {
+    if(!track) return;
 
     await loadPage('track-page');
 
