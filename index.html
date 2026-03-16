@@ -3,12 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/logo.jpg" />
-    <link rel="stylesheet" href="src/css/general.css">
     <link rel="stylesheet" href="src/css/main-page.css">
     <link rel="stylesheet" href="src/css/base.css">
     <link rel="stylesheet" href="src/css/layout.css">
     <link rel="stylesheet" href="src/css/library.css">
     <link rel="stylesheet" href="src/css/track-view.css">
+    <link rel="stylesheet" href="src/css/add-track.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>www.podmefom.com</title>
   </head>
@@ -21,6 +21,9 @@
                 <nav class="main-nav">
                     <button class="nav-link" data-page="library">
                         <i class="fas fa-heart"></i> Лайкнутые
+                    </button>
+                    <button class="nav-link" data-page="add-track">
+                        <i class="fas fa-plus-circle"></i> Создать трек
                     </button>
                 </nav>
             </div>
@@ -64,7 +67,12 @@
             <input type="range" id="global-volume" min="0" max="1" step="0.01" value="0.5">
         </div> 
     </div>
+    
+    
+    <div id="player-storage">
 
+    </div>
+    
     <script src="https://kit.fontawesome.com/c20d506928.js" crossorigin="anonymous"></script>
     <script type="module" src="/src/main.js"></script>
     <script type="module" src="/src/router.js"></script>

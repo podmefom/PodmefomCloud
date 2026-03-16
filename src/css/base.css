@@ -41,15 +41,35 @@ body::before, body::after {
     animation: float 10s infinite alternate;
 }
 
-body::before { top: -100px; left: -100px; }
-body::after { bottom: -100px; right: -100px; background: radial-gradient(circle, rgba(0, 122, 255, 0.15), transparent 70%); animation-delay: -5s; }
+body::before { 
+    top: -100px; 
+    left: -100px; 
+}
+body::after { 
+    bottom: -100px; 
+    right: -100px; 
+    background: radial-gradient(circle, rgba(0, 122, 255, 0.15), transparent 70%); 
+    animation-delay: -5s; 
+}
+
+#app {
+    padding-bottom: 140px;
+}
 
 @keyframes float {
-    0% { transform: translate(0, 0); }
-    100% { transform: translate(50px, 50px); }
+    0% { 
+        transform: translate(0, 0); 
+    }
+    100% { 
+        transform: translate(50px, 50px); 
+    }
 }
 
 @keyframes marquee {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-100%); } 
+    0% { 
+        transform: translateX(0); 
+    }
+    100% { 
+        transform: translateX(-100%); 
+    } 
 }

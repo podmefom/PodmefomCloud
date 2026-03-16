@@ -40,17 +40,36 @@ function updateBottomPlayer(track) {
     }
 }
 
-function toggleLikeState(trackId, likeIcon, countDisplay) {
-    let currentCount = parseInt(countDisplay.textContent) || 0;
-    const isLiked = likeIcon.classList.toggle('fa-solid');
-    likeIcon.classList.toggle('fa-regular');
-    countDisplay.textContent = isLiked ? currentCount + 1 : Math.max(0, currentCount - 1);
-    const index = likedTracks.indexOf(trackId);
-    if (index === -1) {
-        likedTracks.push(trackId);
-    } else {
-        likedTracks.splice(index, 1);
+async function parkActivePlayer() {
+    if (currentActiveInstance) {
+        currentActiveInstance.setOptions({container: '#player-storage'});
     }
+}
+
+function toggleLikeState(trackId, likeIcon, countDisplay) {
+    const indexInLiked = likedTracks.indexOf(String(trackId));
+    const isAlreadyLikedByMe = indexInLiked !== -1;
+
+    const trackInState = state.allTracks.find(t => String(t.id) === String(trackId));
+
+    if (!trackInState) return;
+
+    if (isAlreadyLikedByMe) {
+        trackInState.likesCount = Math.max(0, (trackInState.likesCount || 0) - 1);
+        likedTracks.splice(indexInLiked, 1); 
+        
+        likeIcon.classList.replace('fa-solid', 'fa-regular');
+        likeIcon.classList.replace('fas', 'far'); 
+    } else {
+        trackInState.likesCount = (trackInState.likesCount || 0) + 1;
+        likedTracks.push(String(trackId)); 
+        
+        likeIcon.classList.replace('fa-regular', 'fa-solid');
+        likeIcon.classList.replace('far', 'fas');
+    }
+
+    countDisplay.textContent = trackInState.likesCount;
+    SaveTracks();
     localStorage.setItem('likedTracks', JSON.stringify(likedTracks));
 }
 
@@ -64,18 +83,20 @@ function getOrCreatePlayer(container, audioUrl, icon, progressBar, durationBox) 
         ...wavesurferOptions,
         container: container,
         url: audioUrl,
+        backend: 'WebAudio',
     });
 
+    
     players[audioUrl] = wavesurfer;
 
     wavesurfer.on('play', () => {
-        icon.classList.replace('fa-play', 'fa-pause');
+        if (icon) icon.classList.replace('fa-play', 'fa-pause');
         const mainIcon = document.querySelector('#main-play-btn i');
         if (mainIcon) mainIcon.classList.replace('fa-play', 'fa-pause');
     });
 
     wavesurfer.on('pause', () => {
-        icon.classList.replace('fa-pause', 'fa-play');
+        if (icon) icon.classList.replace('fa-pause', 'fa-play');
         const mainIcon = document.querySelector('#main-play-btn i');
         if (mainIcon) mainIcon.classList.replace('fa-pause', 'fa-play');
     });
@@ -87,7 +108,12 @@ function getOrCreatePlayer(container, audioUrl, icon, progressBar, durationBox) 
         if (duration && progressBar) progressBar.value = currentTime / duration;
     });
 
+    const globalVol = document.getElementById('global-volume')?.value || 0.5;
+    wavesurfer.setVolume(globalVol);
+
     wavesurfer.on('ready', () => {
+        const currentVol = document.getElementById('global-volume')?.value || 0.5;
+        wavesurfer.setVolume(currentVol);
         initVisualizer(wavesurfer);
         if (durationBox) durationBox.textContent = formatTime(wavesurfer.getDuration());
         const totalDisplay = document.querySelector('.total-duration');
@@ -104,89 +130,219 @@ function changeTrack(direction) {
     const targetBtn = document.querySelector(`[data-audio="${targetTrack.url}"]`);
     if (targetBtn) targetBtn.click();
 }
- 
-export function initAudioPlayers() {
-    const playButtons = document.querySelectorAll('.play-btn');
-    const progressBar = document.getElementById('progress-bar');
-    const globalVolume = document.getElementById('global-volume');
-    
-    playButtons.forEach(btn => {
-        const card = btn.closest('.track-card, .beat-card');
-        const container = card.querySelector('.waveform-container');
-        const audioUrl = btn.getAttribute('data-audio');
-        const icon = btn.querySelector('i');
-        const durationBox = card.querySelector('.card-duration');
-        const likeButton = card.querySelector('.like-stat');
-        const likeIcon = likeButton?.querySelector('i');
-        const countDisplay = likeButton?.querySelector('span');
-        const knownTrack = state.allTracks.find(t => t.url === audioUrl);
-        const trackInfo = knownTrack || {
-            id: null,
-            title: card.querySelector('.track-title')?.textContent?.trim() || 'Untitled',
-            artist: card.querySelector('.track-author')?.textContent?.trim() || 'Unknown artist',
-            url: audioUrl,
-            img: card.querySelector('img')?.getAttribute('src') || '/images/1.jpg',
-            description: 'Описание пока не добавлено.'
-        };
 
-        let wavesurfer = null;
-        try {
-            wavesurfer = getOrCreatePlayer(container, audioUrl, icon, progressBar, durationBox);
-        } catch (error) {
-            console.error('Не удалось инициализировать плеер:', audioUrl, error);
-        }
+function preloadWaveforms() {
+    setTimeout(() => {
+        const cards = document.querySelectorAll('.track-card');
 
-        if (likeButton && trackInfo?.id && likeIcon && countDisplay) {
-            likeIcon.classList.replace('fa-regular', 'fa-solid');
-            countDisplay.textContent = (parseInt(countDisplay.textContent) || 0) + 1;
-        }
+        cards.forEach(card => {
+            const container = card.querySelector('.waveform-container');
+            const playBtn = card.querySelector('.play-btn');
+            const audioUrl = playBtn?.getAttribute('data-audio');
 
-        if (likeButton && trackInfo?.id && likeIcon && countDisplay) {
-            likeButton.addEventListener('click', (e) => {
-                e.stopPropagation();
-                toggleLikeState(trackInfo.id, likeIcon, countDisplay);
-            });
-        }
-
-        card.addEventListener('click', (e) => {
-            if (!e.target.closest('.play-btn') && !e.target.closest('.like-stat')) {
-                showTrackPage(trackInfo);
-            }
-        });
-
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-
-            if (!wavesurfer) {
-                try {
-                    wavesurfer = getOrCreatePlayer(container, audioUrl, icon, progressBar, durationBox);
-                } catch (error) {
-                    console.error('Не удалось запустить плеер:', audioUrl, error);
-                    return;
+            if (container && audioUrl) {
+                if (players[audioUrl]) {
+                    players[audioUrl].setOptions({ container: container });
+                } else {
+                    getOrCreatePlayer(container, audioUrl);
                 }
             }
-
-            if (currentActiveInstance && currentActiveInstance !== wavesurfer) {
-                currentActiveInstance.pause();
-            }
-            wavesurfer.playPause();
-            currentActiveInstance = wavesurfer;
-            if (knownTrack) {
-                state.currentTrackIndex = state.allTracks.indexOf(knownTrack);
-            }
-            updateBottomPlayer(trackInfo);
-            currentActiveInstance.setVolume(globalVolume.value);
-            initVisualizer(currentActiveInstance);
         });
+    }, 100); 
+}
+
+export function initAudioPlayers() {
+    const tracksList = document.getElementById('tracks-list');
+    const beatsList = document.getElementById('beats-list');
+
+    const handleListCheck = (e) => {
+        const card = e.target.closest('.track-card, .beat-card');
+        if (!card) return;
+
+        const playBtn = e.target.closest('.play-btn');
+        const likeBtn = e.target.closest('.like-stat');
+
+        const cardTop = card.querySelector('.card-top');
+        const trackId = cardTop ? cardTop.getAttribute('data-id') : null;
+        const trackInfo = state.allTracks.find(t => String(t.id) === String(trackId));
+
+        if (!trackInfo) return;
+
+        if (playBtn) {
+            e.stopPropagation();
+            const audioUrl = playBtn.getAttribute('data-audio');
+            const container = card.querySelector('.waveform-container');
+            const icon = playBtn.querySelector('i');
+
+            const ws = getOrCreatePlayer(container, audioUrl, icon);
+
+            if (currentActiveInstance && currentActiveInstance !== ws) {
+                currentActiveInstance.pause();
+                currentActiveInstance.setTime(0);
+
+                const progressBar = document.getElementById('progress-bar');
+                if (progressBar) progressBar.value = 0;
+                
+                const currentDisplay = document.querySelector('.current-time');
+                if (currentDisplay) currentDisplay.textContent = "0:00";
+            }
+
+            ws.playPause();
+            currentActiveInstance = ws;
+            updateBottomPlayer(trackInfo);
+            return;
+        }
+
+        if (likeBtn) {
+            e.stopPropagation();
+            const likeIcon = likeBtn.querySelector('i');
+            const countDisplay = likeBtn.querySelector('span');
+            toggleLikeState(trackId, likeIcon, countDisplay);
+            return; 
+        }
+
+        const waveform = e.target.closest('.waveform-container');
+        if (waveform) {
+            e.stopPropagation();
+            return
+        }
+
+
+
+        parkActivePlayer();
+        showTrackPage(trackInfo);
+    };
+
+    tracksList?.replaceWith(tracksList.cloneNode(true)); 
+    beatsList?.replaceWith(beatsList.cloneNode(true)); 
+
+    document.getElementById('tracks-list')?.addEventListener('click', handleListCheck);
+    document.getElementById('beats-list')?.addEventListener('click', handleListCheck);
+}
+
+async function initAddTrackPage() {
+    const toBase64 = file => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
     });
+
+    await loadPage('add-track');
+
+    const audioInput = document.getElementById('track-url'); 
+    const imgInput = document.getElementById('track-img');
+
+    const form = document.getElementById('add-track-form');
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const audioFile = document.getElementById('track-url').files[0];
+        const imgFile = document.getElementById('track-img').files[0];
+        
+        if (!audioFile || !imgFile) {
+            alert("Бля, выбери и музыку, и обложку!");
+            return;
+        }
+
+        imgInput?.addEventListener('input', (e)  => {
+            const url = e.target.value;
+            if (url) {
+                previewBox.innerHTML = `<img src="${url}" onerror="this.src=''; this.parentElement.innerHTML='Ошибка ссылки'">`;
+            } else {
+                previewBox.innerHTML = `<span>Превью обложки</span>`;
+            }
+        });
+
+        const audioBase64 = await toBase64(audioFile);
+        const imgBase64 = await toBase64(imgFile);
+
+
+        const newTrack = {
+            id: Date.now(),
+            title: document.getElementById('track-title').value,
+            artist: document.getElementById('track-artist').value,
+            url: audioBase64,
+            img: imgBase64,
+            description: document.getElementById('track-desc').value,
+            category: 'track'
+        };
+
+        state.allTracks.push(newTrack);
+        SaveTracks();
+
+        alert('Трек добавлен!');
+
+        document.querySelector('[data-page="main-page"]').click();
+    });
+}
+
+async function SaveTracks() {
+    const data = JSON.stringify(state.allTracks);
+
+    localStorage.setItem('my_tracks', data);
+}
+
+async function RenderTrackCards() {
+    const trackContainer = document.getElementById('tracks-list');
+    const beatContainer = document.getElementById('beats-list');
+
+    if (!trackContainer) return;
+    if (!beatContainer) return;
+
+    trackContainer.innerHTML = '';
+    beatContainer.innerHTML = '';
+
+    const isLiked = JSON.parse(localStorage.getItem('likedTracks')) || [];
+    console.log(isLiked)
+
+    state.allTracks.forEach(track => {
+        const isAlreadyLiked = isLiked.includes(String(track.id));
+
+        const trackHtml = `
+            <div class="track-card">
+                <div class="card-top" data-id="${track.id}">
+                    <img src="${track.img}" alt="Cover">
+                    <div class="card-top-titles">
+                        <h3 class="track-title">${track.title}</h3>
+                        <h3 class="track-author">${track.artist}</h3>
+                    </div>
+                </div>
+                <div class="card-mid">
+                    <div class="waveform-container" id="waveform-${track.id}"></div>
+                </div>
+                <div class="card-bottom">
+                    <button class="play-btn" data-audio="${track.url}">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    
+                    <button class="like-stat">
+                        <i class="${isAlreadyLiked ? 'fas' : 'far'} fa-heart"></i>
+                        <span>${track.likesCount || 0}</span>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        if (track.category === 'beat') {
+            beatContainer.insertAdjacentHTML('beforeend', trackHtml);
+        } else {
+            trackContainer.insertAdjacentHTML('beforeend', trackHtml);
+        }
+    });
+    preloadWaveforms();
 }
 
 async function showTrackPage(track) {
     if(!track) return;
-
+    console.log("Пытаюсь загрузить страницу для:", track.title);
+    
     await loadPage('track-page');
+    const pageSection = document.querySelector('.track-page-view');
+    if (pageSection) pageSection.classList.add('active');
 
     const titleEl = document.querySelector('.full-track-title');
+    console.log("Найден ли заголовок?", titleEl);
     const artistEl = document.querySelector('.full-track-artist');
     const coverEl = document.querySelector('.full-track-cover');
     const descEl = document.querySelector('.description-text');
@@ -219,6 +375,7 @@ async function showTrackPage(track) {
                 currentActiveInstance.pause();
             }
 
+
             ws.playPause();
             currentActiveInstance = ws;
             updateBottomPlayer(track);
@@ -230,7 +387,9 @@ async function showTrackPage(track) {
     const backBtn = document.querySelector('.back-btn');
     if (backBtn) {
         backBtn.addEventListener('click', async () => {
+            parkActivePlayer();
             await loadPage('main-page');
+            await RenderTrackCards();
             initAudioPlayers(); 
             initMainPageEvents();
         });
@@ -238,7 +397,15 @@ async function showTrackPage(track) {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
+
+    const savedTracks = localStorage.getItem('my_tracks');
+
+    if (savedTracks) {
+        state.allTracks = JSON.parse(savedTracks);
+    }
+
     await loadPage('main-page');
+    await RenderTrackCards();
     initAudioPlayers();
     initPlayerControls(); 
     initMainPageEvents(); 
@@ -246,15 +413,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.addEventListener('click', async (e) => {
     const navBtn = e.target.closest('[data-page]');
     if (!navBtn) return;
-
+    parkActivePlayer()
     const page = navBtn.getAttribute('data-page');
     if (page === 'library') {
         await loadPage('library-page');
 
     } else if (page === 'main-page') {
         await loadPage('main-page');
+        await RenderTrackCards();
         initAudioPlayers();
         initMainPageEvents();
+    } else if (page === 'add-track') {
+        initAddTrackPage();
     }
     });
 });
@@ -263,17 +433,15 @@ function initPlayerControls() {
     const globalVolume = document.getElementById('global-volume');
     const progressBar = document.getElementById('progress-bar');
 
+    const savedVolume = localStorage.getItem('volume') || 0.5;
+    if (globalVolume) globalVolume.value = savedVolume;
 
     globalVolume?.addEventListener('input', (e) => {
-        currentActiveInstance?.setVolume(e.target.value);
-    });
-
-    const savedVolume = localStorage.getItem('volume');
-    if (savedVolume !== null) globalVolume.value = savedVolume;
-
-    globalVolume?.addEventListener('input', (e) => {
-        currentActiveInstance?.setVolume(e.target.value);
-        localStorage.setItem('volume', e.target.value);
+        const val = e.target.value;
+        Object.values(players).forEach(ws => {
+            ws.setVolume(val);
+        });
+        localStorage.setItem('volume', val);
     });
 
     progressBar?.addEventListener('input', (e) => {

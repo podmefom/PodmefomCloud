@@ -1,29 +1,107 @@
 .track-page-view {
-    grid-row: 2;
-    display: none; flex-direction: column; padding: 40px 20px; z-index: 500;
+    display: none; 
+    flex-direction: column; 
+    padding: 40px 20px; 
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+    min-height: 100vh;
 }
-.track-page-view.active { display: flex; opacity: 1; visibility: visible; }
+
+.track-page-view.active { 
+    display: flex; 
+}
+
+.container-detail {
+    width: 100%;
+}
+
+.track-hero { 
+    position: relative;
+    display: flex; 
+    gap: 40px; 
+    margin-bottom: 50px; 
+    align-items: center; 
+    padding: 60px;
+    background: var(--glass-surface);
+    border-radius: 32px;
+    border: 1px solid var(--glass-border);
+    overflow: hidden;
+}
 
 #visualizer {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    pointer-events: none; z-index: 999 !important;
-    background: rgba(255, 0, 0, 0.2); /* Тот самый тестовый красный */
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%;
+    pointer-events: none; 
+    z-index: 1;
+    background: rgba(255, 0, 0, 0.05); 
 }
 
-.back-btn {
-    align-self: flex-start; background: var(--glass-surface); border: 1px solid var(--glass-border);
-    color: var(--text-main); padding: 12px 24px; border-radius: 12px; cursor: pointer;
-    margin-bottom: 30px; transition: all 0.3s; display: flex; align-items: center; gap: 10px;
+.hero-img-wrapper {
+    flex-shrink: 0;
+    width: 300px;
+    height: 300px;
+    z-index: 2;
 }
 
-.track-hero { position: relative; display: flex; gap: 40px; margin-bottom: 50px; align-items: flex-end; }
-.full-track-cover { width: 300px; height: 300px; border-radius: 24px; object-fit: cover; box-shadow: 0 20px 50px rgba(0,0,0,0.6); }
-.full-track-title { font-size: 3.5rem; font-weight: 800; }
-.full-track-artist { font-size: 1.5rem; color: var(--accent-glow); margin-bottom: 30px; }
+.full-track-cover { 
+    width: 100%; 
+    height: 100%; 
+    border-radius: 20px; 
+    object-fit: cover; 
+    box-shadow: 0 20px 50px rgba(0,0,0,0.6); 
+}
+
+.track-hero-info {
+    z-index: 2;
+}
+
+.full-track-title { 
+    font-size: clamp(2rem, 5vw, 3.5rem); 
+    font-weight: 800; 
+    margin: 0;
+}
+
+.full-track-artist { 
+    font-size: 1.5rem; 
+    color: var(--accent); 
+    margin: 10px 0 30px 0;
+}
+
+.track-info-grid { 
+    display: grid; 
+    grid-template-columns: 1.5fr 1fr; 
+    gap: 25px; 
+    padding-bottom: 120px;
+}
 
 .track-description, .track-lyrics-section {
-    background: var(--glass-surface); padding: 30px; border-radius: 20px;
-    border: 1px solid var(--glass-border); margin-bottom: 20px;
+    background: var(--glass-surface); 
+    padding: 30px; 
+    border-radius: 24px;
+    border: 1px solid var(--glass-border);
 }
 
-.track-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 900px) {
+    .track-hero {
+        flex-direction: column;
+        padding: 40px 20px;
+        text-align: center;
+    }
+
+    .hero-img-wrapper {
+        width: 240px;
+        height: 240px;
+    }
+
+    .track-info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .full-track-title {
+        font-size: 2.2rem;
+    }
+}

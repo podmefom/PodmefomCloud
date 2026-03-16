@@ -6,7 +6,9 @@ const tracks = [
         url: "/audio/1.mp3",
         img: "/images/1.jpg",
         description: "1",
-        lyrics: "мяу"
+        lyrics: "мяу",
+        category: 'track',
+        likesCount: 0
     },
     {
         id: 2,
@@ -15,7 +17,9 @@ const tracks = [
         url: "/audio/2.mp3",
         img: "/images/1.jpg",
         description: "2",
-        lyrics: "vze"
+        lyrics: "vze",
+        category: 'beat',
+        likesCount: 0
     }, 
     {
         id: 3,
@@ -24,7 +28,9 @@ const tracks = [
         url: "/audio/3.mp3",
         img: "/images/1.jpg",
         description: "3",
-        lyrics: "гав"
+        lyrics: "гав",
+        category: 'beat',
+        likesCount: 0
     }
 ];
 

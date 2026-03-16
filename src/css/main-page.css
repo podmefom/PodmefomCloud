@@ -151,7 +151,49 @@
     cursor: pointer;
 }
 
+.like-stat {
+    order: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s var(--ease-elastic);
+    user-select: none;
+}
+
+.like-stat:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+.like-stat i {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    transition: all 0.3s var(--ease-elastic);
+}
+
+.like-stat span {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    letter-spacing: 0.5px;
+}
+
+.like-stat:active {
+    transform: scale(0.92);
+}
+
+.like-stat:has(.fa-solid) span {
+    color: #fff;
+}
+
 .play-btn {
+    order: 2;
     width: 42px;
     height: 42px;
     border-radius: 50%;

@@ -1,0 +1,53 @@
+<section class="add-track-view">
+    <div class="main-container">
+        <button class="back-btn-simple" data-page="main-page">
+            <i class="fas fa-arrow-left"></i> На главную
+        </button>
+
+        <div class="form-card">
+            <div class="form-header">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <h2>Загрузить новый звук</h2>
+                <p>Заполни данные, чтобы трек появился в коллекции</p>
+            </div>
+
+            <form id="add-track-form">
+                <div class="input-grid">
+                    <div class="input-group">
+                        <label for="track-title">Название трека</label>
+                        <input type="text" id="track-title" placeholder="Напр: Night Drive" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="track-artist">Исполнитель</label>
+                        <input type="text" id="track-artist" placeholder="Podmefom" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="track-url">URL Аудио (.mp3)</label>
+                        <input type="file" id="track-url" placeholder="audio/track.mp3" accept="audio/*" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="track-img">URL Обложки (квадратная)</label>
+                        <input type="file" id="track-img" placeholder="images/cover.jpg" accept="audio/*" required>
+                        
+                        <div id="cover-preview" class="image-preview-box">
+                            <span>Превью обложки</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-group full-width">
+                    <label for="track-desc">Описание (BPM, Тональность, История)</label>
+                    <textarea id="track-desc" rows="4" placeholder="Напиши что-нибудь интересное о треке..."></textarea>
+                </div>
+
+                <button type="submit" class="save-track-btn">
+                    <span>Опубликовать трек</span>
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</section>
