@@ -2,6 +2,26 @@ import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js
 import state from './data.js';
 import { initVisualizer } from './visualizer.js';
 import { loadPage } from './router.js';
+import { supabase } from './supabaseClient.js';
+import { handleLogout } from './auth.js';
+
+async function testConnection() {
+    const { data, error } = await supabase
+        .from('tracks')
+        .select('*');
+
+    if (error) {
+        console.error('Ошибка связи с базой:', error.message);
+    } else {
+        console.log('Связь установлена! Твои треки из базы:', data);
+        state.allTracks = data;
+        await RenderTrackCards();
+        return data;
+    }
+}
+
+testConnection();
+
 
 let currentActiveInstance;
 let likedTracks = JSON.parse(localStorage.getItem('likedTracks')) || [];
@@ -23,7 +43,7 @@ function formatTime(seconds) {
     return minutes + ':' + s;
 }
 
-function updateBottomPlayer(track) {
+async function updateBottomPlayer(track) {
     const title = document.querySelector('.current-track-title');
     const artist = document.querySelector('.current-track-artist');
     const img = document.querySelector('.current-track-img');
@@ -36,7 +56,7 @@ function updateBottomPlayer(track) {
             title.classList.toggle('scrolling', isOverflowing);
         }
         if (artist) artist.textContent = track.artist;
-        if (img) img.src = track.img;
+        if (img) img.src = track.cover_url;
     }
 }
 
@@ -46,47 +66,56 @@ async function parkActivePlayer() {
     }
 }
 
-function toggleLikeState(trackId, likeIcon, countDisplay) {
+async function toggleLikeState(trackId, likeIcon, countDisplay) {
     const indexInLiked = likedTracks.indexOf(String(trackId));
     const isAlreadyLikedByMe = indexInLiked !== -1;
-
     const trackInState = state.allTracks.find(t => String(t.id) === String(trackId));
 
     if (!trackInState) return;
 
     if (isAlreadyLikedByMe) {
-        trackInState.likesCount = Math.max(0, (trackInState.likesCount || 0) - 1);
-        likedTracks.splice(indexInLiked, 1); 
-        
+        trackInState.likes_count = Math.max(0, (trackInState.likes_count || 0) - 1);
+        likedTracks.splice(indexInLiked, 1);
         likeIcon.classList.replace('fa-solid', 'fa-regular');
-        likeIcon.classList.replace('fas', 'far'); 
     } else {
-        trackInState.likesCount = (trackInState.likesCount || 0) + 1;
-        likedTracks.push(String(trackId)); 
-        
+        trackInState.likes_count = (trackInState.likes_count || 0) + 1;
+        likedTracks.push(String(trackId));
         likeIcon.classList.replace('fa-regular', 'fa-solid');
-        likeIcon.classList.replace('far', 'fas');
     }
 
-    countDisplay.textContent = trackInState.likesCount;
-    SaveTracks();
+    countDisplay.textContent = trackInState.likes_count;
     localStorage.setItem('likedTracks', JSON.stringify(likedTracks));
+
+    const { error } = await supabase
+        .from('tracks')
+        .update({ likes_count: trackInState.likes_count })
+        .eq('id', trackId);
+
+    if (error) {
+        console.error('Не удалось сохранить лайк в базе:', error.message);
+    }
+
+    await supabase.from('tracks').update({ likes_count: trackInState.likes_count }).eq('id', trackId);
 }
 
-function getOrCreatePlayer(container, audioUrl, icon, progressBar, durationBox) {
+async function getOrCreatePlayer(container, audioUrl, icon, progressBar, durationBox) {
+
+    const safeContainer = container || document.createElement('div');
+    
     if (players[audioUrl]) {
-    players[audioUrl].setOptions({ container: container });
-    return players[audioUrl];
+        if (container) {
+            players[audioUrl].setOptions({ container: safeContainer });
+        }
+        return players[audioUrl];
     }
 
     const wavesurfer = WaveSurfer.create({
         ...wavesurferOptions,
-        container: container,
+        container: safeContainer,
         url: audioUrl,
         backend: 'WebAudio',
     });
 
-    
     players[audioUrl] = wavesurfer;
 
     wavesurfer.on('play', () => {
@@ -127,7 +156,7 @@ function getOrCreatePlayer(container, audioUrl, icon, progressBar, durationBox) 
 function changeTrack(direction) {
     state.currentTrackIndex = (state.currentTrackIndex + direction + state.allTracks.length) % state.allTracks.length;
     const targetTrack = state.allTracks[state.currentTrackIndex];
-    const targetBtn = document.querySelector(`[data-audio="${targetTrack.url}"]`);
+    const targetBtn = document.querySelector(`[data-audio="${targetTrack.audio_url}"]`);
     if (targetBtn) targetBtn.click();
 }
 
@@ -151,11 +180,11 @@ function preloadWaveforms() {
     }, 100); 
 }
 
-export function initAudioPlayers() {
+export async function initAudioPlayers() {
     const tracksList = document.getElementById('tracks-list');
     const beatsList = document.getElementById('beats-list');
 
-    const handleListCheck = (e) => {
+    const handleListCheck = async (e) => {
         const card = e.target.closest('.track-card, .beat-card');
         if (!card) return;
 
@@ -174,7 +203,7 @@ export function initAudioPlayers() {
             const container = card.querySelector('.waveform-container');
             const icon = playBtn.querySelector('i');
 
-            const ws = getOrCreatePlayer(container, audioUrl, icon);
+            const ws = await getOrCreatePlayer(container, audioUrl, icon);
 
             if (currentActiveInstance && currentActiveInstance !== ws) {
                 currentActiveInstance.pause();
@@ -207,11 +236,16 @@ export function initAudioPlayers() {
             return
         }
 
-
-
         parkActivePlayer();
         showTrackPage(trackInfo);
     };
+
+    [tracksList, beatsList].forEach(list => {
+        if (!list) return;
+        const newList = list.cloneNode(true);
+        list.replaceWith(newList);
+        newList.addEventListener('click', handleListCheck);
+    });
 
     tracksList?.replaceWith(tracksList.cloneNode(true)); 
     beatsList?.replaceWith(beatsList.cloneNode(true)); 
@@ -221,17 +255,21 @@ export function initAudioPlayers() {
 }
 
 async function initAddTrackPage() {
-    const toBase64 = file => new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = error => reject(error);
-    });
-
     await loadPage('add-track');
 
     const audioInput = document.getElementById('track-url'); 
     const imgInput = document.getElementById('track-img');
+    const previewBox = document.getElementById('preview-box'); 
+
+    imgInput?.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const url = URL.createObjectURL(file);
+            if (previewBox) {
+                previewBox.innerHTML = `<img src="${url}" style="max-width: 100%; border-radius: 8px;">`;
+            }
+        }
+    });
 
     const form = document.getElementById('add-track-form');
     form.addEventListener('submit', async (e) => {
@@ -239,48 +277,69 @@ async function initAddTrackPage() {
 
         const audioFile = document.getElementById('track-url').files[0];
         const imgFile = document.getElementById('track-img').files[0];
+        const titleText = document.getElementById('track-title').value;
+        const artistText = document.getElementById('track-artist').value;
+        const descText = document.getElementById('track-desc').value;
         
         if (!audioFile || !imgFile) {
             alert("Бля, выбери и музыку, и обложку!");
             return;
         }
 
-        imgInput?.addEventListener('input', (e)  => {
-            const url = e.target.value;
-            if (url) {
-                previewBox.innerHTML = `<img src="${url}" onerror="this.src=''; this.parentElement.innerHTML='Ошибка ссылки'">`;
-            } else {
-                previewBox.innerHTML = `<span>Превью обложки</span>`;
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.textContent;
+        submitBtn.textContent = 'Загружаем в облако...';
+        submitBtn.disabled = true;
+
+        try {
+            const audioPath = `${Date.now()}_${audioFile.name}`;
+            const imgPath = `${Date.now()}_${imgFile.name}`;
+
+            const { error: audioError } = await supabase.storage
+                .from('audio-files')
+                .upload(audioPath, audioFile);
+            if (audioError) throw audioError;
+
+            const { error: imgError } = await supabase.storage
+                .from('covers')
+                .upload(imgPath, imgFile);
+            if (imgError) throw imgError;
+
+            const audioUrl = supabase.storage.from('audio-files').getPublicUrl(audioPath).data.publicUrl;
+            const imgUrl = supabase.storage.from('covers').getPublicUrl(imgPath).data.publicUrl;
+            const category = document.getElementById('track-category').value;
+
+            console.log("Ссылка на аудио:", audioUrl);
+
+            const { data: newTrackData, error: dbError } = await supabase
+                .from('tracks')
+                .insert([{
+                    title: titleText,
+                    artist: artistText, 
+                    audio_url: audioUrl,
+                    cover_url: imgUrl,
+                    description: descText,
+                    category: category,
+                    likes_count: 0
+                }])
+                .select(); 
+
+            if (dbError) throw dbError;
+
+            if (newTrackData && newTrackData.length > 0) {
+                state.allTracks.push(newTrackData[0]);
             }
-        });
 
-        const audioBase64 = await toBase64(audioFile);
-        const imgBase64 = await toBase64(imgFile);
+            document.querySelector('[data-page="main-page"]').click();
 
-
-        const newTrack = {
-            id: Date.now(),
-            title: document.getElementById('track-title').value,
-            artist: document.getElementById('track-artist').value,
-            url: audioBase64,
-            img: imgBase64,
-            description: document.getElementById('track-desc').value,
-            category: 'track'
-        };
-
-        state.allTracks.push(newTrack);
-        SaveTracks();
-
-        alert('Трек добавлен!');
-
-        document.querySelector('[data-page="main-page"]').click();
+        } catch (error) {
+            console.error('Ошибка загрузки:', error);
+            alert('Случилась хуйня при загрузке: ' + error.message);
+        } finally {
+            submitBtn.textContent = originalBtnText;
+            submitBtn.disabled = false;
+        }
     });
-}
-
-async function SaveTracks() {
-    const data = JSON.stringify(state.allTracks);
-
-    localStorage.setItem('my_tracks', data);
 }
 
 async function RenderTrackCards() {
@@ -302,7 +361,7 @@ async function RenderTrackCards() {
         const trackHtml = `
             <div class="track-card">
                 <div class="card-top" data-id="${track.id}">
-                    <img src="${track.img}" alt="Cover">
+                    <img src="${track.cover_url}" alt="Cover">
                     <div class="card-top-titles">
                         <h3 class="track-title">${track.title}</h3>
                         <h3 class="track-author">${track.artist}</h3>
@@ -312,13 +371,13 @@ async function RenderTrackCards() {
                     <div class="waveform-container" id="waveform-${track.id}"></div>
                 </div>
                 <div class="card-bottom">
-                    <button class="play-btn" data-audio="${track.url}">
+                    <button class="play-btn" data-audio="${track.audio_url}">
                         <i class="fas fa-play"></i>
                     </button>
                     
                     <button class="like-stat">
                         <i class="${isAlreadyLiked ? 'fas' : 'far'} fa-heart"></i>
-                        <span>${track.likesCount || 0}</span>
+                        <span>${track.likes_count || 0}</span>
                     </button>
                 </div>
             </div>
@@ -334,75 +393,58 @@ async function RenderTrackCards() {
 }
 
 async function showTrackPage(track) {
-    if(!track) return;
-    console.log("Пытаюсь загрузить страницу для:", track.title);
+    if (!track) return;
     
-    await loadPage('track-page');
-    const pageSection = document.querySelector('.track-page-view');
-    if (pageSection) pageSection.classList.add('active');
+    await loadPage('track-page'); 
 
-    const titleEl = document.querySelector('.full-track-title');
-    console.log("Найден ли заголовок?", titleEl);
-    const artistEl = document.querySelector('.full-track-artist');
-    const coverEl = document.querySelector('.full-track-cover');
-    const descEl = document.querySelector('.description-text');
+    setTimeout(() => {
+        const titleEl = document.querySelector('.full-track-title');
+        const artistEl = document.querySelector('.full-track-artist');
+        const coverEl = document.querySelector('.full-track-cover');
+        const descEl = document.querySelector('.description-text');
+        const pageSection = document.querySelector('.track-page-view');
+        const backBtn = document.querySelector('.back-btn-simple');
+        const playMainBtn = document.querySelector('.play-main');
 
-    if (titleEl) titleEl.textContent = track.title;
-    if (artistEl) artistEl.textContent = track.artist;
-    if (coverEl) coverEl.src = track.img;
-    if (descEl) descEl.textContent = track.description;
+        console.log("Элементы найдены:", { titleEl, artistEl, coverEl, backBtn });
 
-    const playMainBtn = document.querySelector('.play-main');
+        if (pageSection) pageSection.classList.add('active');
 
-    if (playMainBtn) {
-        playMainBtn.addEventListener('click', () => {
-            let ws = players[track.url];
+        if (titleEl) titleEl.textContent = track.title;
+        if (artistEl) artistEl.textContent = track.artist;
+        if (coverEl) coverEl.src = track.cover_url;
+        if (descEl) descEl.textContent = track.description;
 
-            if (!ws) {
-                const hiddenContainer = document.createElement('div');
-                hiddenContainer.style.display = 'none';
-                document.body.appendChild(hiddenContainer);
+        if (backBtn) {
+            backBtn.onclick = async () => {
+                parkActivePlayer();
+                await loadPage('main-page');
+                await RenderTrackCards();
+                initAudioPlayers(); 
+                initMainPageEvents(); 
+            };
+        }
 
-                ws = WaveSurfer.create({
-                    url: track.url,
-                    container: hiddenContainer,
-                    ...wavesurferOptions
-                });
-                players[track.url] = ws;
-            }
-
-            if (currentActiveInstance && currentActiveInstance !== ws) {
-                currentActiveInstance.pause();
-            }
-
-
-            ws.playPause();
-            currentActiveInstance = ws;
-            updateBottomPlayer(track);
-            initVisualizer(ws); 
-        });
-    }
-
-
-    const backBtn = document.querySelector('.back-btn');
-    if (backBtn) {
-        backBtn.addEventListener('click', async () => {
-            parkActivePlayer();
-            await loadPage('main-page');
-            await RenderTrackCards();
-            initAudioPlayers(); 
-            initMainPageEvents();
-        });
-    }
+        if (playMainBtn) {
+            playMainBtn.onclick = async () => {
+                let ws = await getOrCreatePlayer(null, track.audio_url);
+                if (currentActiveInstance && currentActiveInstance !== ws) {
+                    currentActiveInstance.pause();
+                }
+                ws.playPause();
+                currentActiveInstance = ws;
+                updateBottomPlayer(track);
+                initVisualizer(ws); 
+            };
+        }
+    }, 60); 
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
 
     const savedTracks = localStorage.getItem('my_tracks');
 
-    if (savedTracks) {
-        state.allTracks = JSON.parse(savedTracks);
-    }
+    state.allTracks = await testConnection();
 
     await loadPage('main-page');
     await RenderTrackCards();
@@ -411,22 +453,29 @@ document.addEventListener("DOMContentLoaded", async () => {
     initMainPageEvents(); 
     
     document.addEventListener('click', async (e) => {
-    const navBtn = e.target.closest('[data-page]');
-    if (!navBtn) return;
-    parkActivePlayer()
-    const page = navBtn.getAttribute('data-page');
-    if (page === 'library') {
-        await loadPage('library-page');
-
-    } else if (page === 'main-page') {
-        await loadPage('main-page');
-        await RenderTrackCards();
-        initAudioPlayers();
-        initMainPageEvents();
-    } else if (page === 'add-track') {
-        initAddTrackPage();
-    }
+        const { data: { session } } = await supabase.auth.getSession();
+        const navBtn = e.target.closest('[data-page]');
+        if (!navBtn) return;
+        parkActivePlayer()
+        const page = navBtn.getAttribute('data-page');
+        
+        if (page === 'add-track') {
+            initAddTrackPage();
+        } else if (page === "profile") {
+            if (session) {
+                await loadPage('library-page');
+                initLibraryEvents();
+            } else {
+                const authView = document.querySelector('.auth-view');
+                if (authView) authView.style.display = "flex";
+            }
+            
+        }
     });
+
+    if (window.updateHeaderText) {
+        await window.updateHeaderText();
+    }
 });
 
 function initPlayerControls() {
@@ -476,3 +525,26 @@ function initMainPageEvents() {
     });
 }
 
+function initLibraryEvents() {
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            if (confirm("Выходим?")) {
+                handleLogout();
+            }
+        })
+    }
+};
+
+export async function refreshMainPage() {
+    state.allTracks = await testConnection();
+    await RenderTrackCards();
+    
+    initAudioPlayers();
+    
+    initMainPageEvents();
+    
+    console.log("Главная страница успешно инициализирована!");
+}
+
+window.refreshMainPage = refreshMainPage;

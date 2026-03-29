@@ -10,23 +10,22 @@
     <link rel="stylesheet" href="src/css/track-view.css">
     <link rel="stylesheet" href="src/css/add-track.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <title>www.podmefom.com</title>
   </head>
   <body>
     <header>
-        <div class="header-container">
-            <div class="header-content">
-                <h1 class="header-logo">PODMEFOM</h1>
-                
-                <nav class="main-nav">
-                    <button class="nav-link" data-page="library">
-                        <i class="fas fa-heart"></i> Лайкнутые
-                    </button>
-                    <button class="nav-link" data-page="add-track">
-                        <i class="fas fa-plus-circle"></i> Создать трек
-                    </button>
-                </nav>
-            </div>
+        <div class="header-content">
+            <h1 class="header-logo">PODMEFOM</h1>
+            
+            <nav class="main-nav">
+                <button class="nav-link" data-page="add-track">
+                    <i class="fas fa-plus-circle"></i> Создать трек
+                </button>
+                <button class="nav-link" id="user-profile-btn" data-page ="profile">
+                    <i class="fas fa-user-circle"></i> <span id="user-btn-text">Войти</span>
+                </button>
+            </nav>
         </div>
     </header>
 
@@ -69,6 +68,67 @@
     </div>
     
     
+    <section class="auth-view">
+        <div class="auth-container">
+            <div class="auth-card">
+                <button id="close-auth" class="close-auth-btn">&times;</button>
+                <div class="auth-logo">
+                    <i class="fas fa-headphones-alt"></i>
+                    <h1>PODMEFOM<span>CLOUD</span></h1>
+                </div>
+                
+                <div class="auth-tabs">
+                    <button class="auth-tab active" id="btn-login-tab">Вход</button>
+                    <button class="auth-tab" id="btn-register-tab">Регистрация</button>
+                </div>
+
+                <form id="auth-form">
+                    <div class="input-group">
+                        <label>Email</label>
+                        <input type="email" id="auth-email" placeholder="example@mail.com" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Пароль</label>
+                        <input type="password" id="auth-password" placeholder="••••••••" required>
+                    </div>
+                    
+                    <button type="submit" class="auth-submit-btn">
+                        <span id="auth-btn-text">Войти в аккаунт</span>
+                    </button>
+                </form>
+
+                <form id="register-form" style="display: none;">
+                    <div class="input-group">
+                        <label>Email</label>
+                        <input type="email" id="reg-email" placeholder="example@mail.com" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Имя пользователя</label>
+                        <input type="username" id="reg-username" placeholder="username" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Пароль</label>
+                        <input type="password" id="reg-password" placeholder="••••••••" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Подтвердите пароль</label>
+                        <input type="password" id="reg-password-confirm" placeholder="••••••••" required>
+                    </div>
+                    
+                    <button type="submit" class="reg-submit-btn">
+                        <span id="reg-btn-text">Создать аккаунт</span>
+                    </button>
+                </form>
+
+                <p class="auth-footer">Продолжая, вы соглашаетесь с тем, что музыка — это жизнь 🤘</p>
+            </div>
+        </div>
+    </section>
+
+
     <div id="player-storage">
 
     </div>
@@ -77,5 +137,7 @@
     <script type="module" src="/src/main.js"></script>
     <script type="module" src="/src/router.js"></script>
     <script type="module" src="/src/visualizer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="/src/auth.js"></script>
   </body>
 </html>
